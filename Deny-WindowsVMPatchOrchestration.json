@@ -1,0 +1,50 @@
+{
+    "name": "Deny-WindowsVMPatchOrchestration",
+    "type": "Microsoft.Authorization/policyDefinitions",
+    "properties": {
+        "policyType": "Custom",
+        "mode": "All",
+        "displayName": "Windows virtual machines must use the 'Manual updates' patch orchestration option",
+        "description": "This policy ensures that every Windows virtual machine is created with the 'Manual updates' patch orchestration option (patchMode = Manual). Virtual machines created with any other patch orchestration option are denied (or audited, depending on the selected effect).",
+        "metadata": {
+            "version": "1.0.0",
+            "category": "Compute"
+        },
+        "parameters": {
+            "effect": {
+                "type": "String",
+                "metadata": {
+                    "displayName": "Effect",
+                    "description": "Enable or disable the execution of the policy."
+                },
+                "allowedValues": [
+                    "Audit",
+                    "Deny",
+                    "Disabled"
+                ],
+                "defaultValue": "Deny"
+            }
+        },
+        "policyRule": {
+            "if": {
+                "allOf": [
+                    {
+                        "field": "type",
+                        "equals": "Microsoft.Compute/virtualMachines"
+                    },
+                    {
+                        "field": "Microsoft.Compute/virtualMachines/storageProfile.osDisk.osType",
+                        "equals": "Windows"
+                    },
+                    {
+                        "field": "Microsoft.Compute/virtualMachines/osProfile.windowsConfiguration.patchSettings.patchMode",
+                        "notEquals": "Manual"
+                    }
+                ]
+            },
+            "then": {
+                "effect": "[parameters('effect')]"
+            }
+        }
+    }
+}

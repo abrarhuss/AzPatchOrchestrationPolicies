@@ -1,0 +1,103 @@
+{
+    "name": "VMPatchOrchestration-Initiative",
+    "type": "Microsoft.Authorization/policySetDefinitions",
+    "properties": {
+        "policyType": "Custom",
+        "displayName": "Enforce and configure VM patch orchestration options",
+        "description": "This initiative groups the policies that enforce and remediate the patch orchestration option (patchMode) for Windows and Linux virtual machines. Windows VMs are driven to 'Manual updates' (Manual) and Linux VMs to 'Image default' (ImageDefault).",
+        "metadata": {
+            "version": "1.0.0",
+            "category": "Compute"
+        },
+        "parameters": {
+            "denyWindowsEffect": {
+                "type": "String",
+                "metadata": {
+                    "displayName": "Deny Windows VM patch orchestration - Effect",
+                    "description": "Effect for the policy that enforces 'Manual updates' on new/updated Windows VMs."
+                },
+                "allowedValues": [
+                    "Audit",
+                    "Deny",
+                    "Disabled"
+                ],
+                "defaultValue": "Deny"
+            },
+            "denyLinuxEffect": {
+                "type": "String",
+                "metadata": {
+                    "displayName": "Deny Linux VM patch orchestration - Effect",
+                    "description": "Effect for the policy that enforces 'Image default' on new/updated Linux VMs."
+                },
+                "allowedValues": [
+                    "Audit",
+                    "Deny",
+                    "Disabled"
+                ],
+                "defaultValue": "Deny"
+            },
+            "modifyWindowsEffect": {
+                "type": "String",
+                "metadata": {
+                    "displayName": "Modify Windows VM patch orchestration - Effect",
+                    "description": "Effect for the policy that remediates existing Windows VMs to 'Manual updates'."
+                },
+                "allowedValues": [
+                    "Modify",
+                    "Disabled"
+                ],
+                "defaultValue": "Modify"
+            },
+            "modifyLinuxEffect": {
+                "type": "String",
+                "metadata": {
+                    "displayName": "Modify Linux VM patch orchestration - Effect",
+                    "description": "Effect for the policy that remediates existing Linux VMs to 'Image default'."
+                },
+                "allowedValues": [
+                    "Modify",
+                    "Disabled"
+                ],
+                "defaultValue": "Modify"
+            }
+        },
+        "policyDefinitions": [
+            {
+                "policyDefinitionReferenceId": "Deny-WindowsVMPatchOrchestration",
+                "policyDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/policyDefinitions/Deny-WindowsVMPatchOrchestration')]",
+                "parameters": {
+                    "effect": {
+                        "value": "[parameters('denyWindowsEffect')]"
+                    }
+                }
+            },
+            {
+                "policyDefinitionReferenceId": "Deny-LinuxVMPatchOrchestration",
+                "policyDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/policyDefinitions/Deny-LinuxVMPatchOrchestration')]",
+                "parameters": {
+                    "effect": {
+                        "value": "[parameters('denyLinuxEffect')]"
+                    }
+                }
+            },
+            {
+                "policyDefinitionReferenceId": "Modify-WindowsVMPatchOrchestration",
+                "policyDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/policyDefinitions/Modify-WindowsVMPatchOrchestration')]",
+                "parameters": {
+                    "effect": {
+                        "value": "[parameters('modifyWindowsEffect')]"
+                    }
+                }
+            },
+            {
+                "policyDefinitionReferenceId": "Modify-LinuxVMPatchOrchestration",
+                "policyDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/policyDefinitions/Modify-LinuxVMPatchOrchestration')]",
+                "parameters": {
+                    "effect": {
+                        "value": "[parameters('modifyLinuxEffect')]"
+                    }
+                }
+            }
+        ]
+    }
+}
