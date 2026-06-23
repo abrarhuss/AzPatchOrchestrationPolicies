@@ -60,7 +60,68 @@ The Modify policies require a managed identity to perform remediation. They use 
 
 They define a `conflictEffect` of `audit`, and perform an `addOrReplace` operation on the `patchMode` field.
 
+## Getting the files
+
+Download all of the policy JSON files **and** the [Deploy-Policies.ps1](Deploy-Policies.ps1) script into the same local folder before deploying. The script reads the JSON files from its own directory.
+
+### Option A — Clone the repository (recommended)
+
+```bash
+git clone https://github.com/abrarhuss/AzPatchOrchestrationPolicies.git
+cd AzPatchOrchestrationPolicies
+```
+
+### Option B — Download individual files
+
+Use the **Raw → Save As** option in GitHub, or download each file with PowerShell into the current folder:
+
+```powershell
+$base  = "https://raw.githubusercontent.com/abrarhuss/AzPatchOrchestrationPolicies/main"
+$files = @(
+    "Deny-WindowsVMPatchOrchestration.json",
+    "Deny-LinuxVMPatchOrchestration.json",
+    "Modify-WindowsVMPatchOrchestration.json",
+    "Modify-LinuxVMPatchOrchestration.json",
+    "Initiative-VMPatchOrchestration.json",
+    "Deploy-Policies.ps1"
+)
+foreach ($f in $files) {
+    Invoke-WebRequest -Uri "$base/$f" -OutFile $f
+}
+```
+
 ## Deploying the policies
+
+### PowerShell deployment script (recommended)
+
+[Deploy-Policies.ps1](Deploy-Policies.ps1) is a wrapper that creates (or updates) all four policy definitions **and** the initiative in one step. It automatically resolves the initiative's `[concat(subscription().id, ...)]` references to your subscription-scoped definition IDs, so you don't have to create the definitions before the initiative manually.
+
+**Prerequisites**
+
+- [Azure PowerShell (`Az`) module](https://learn.microsoft.com/powershell/azure/install-azure-powershell) installed.
+- Signed in with `Connect-AzAccount`.
+- Permission to create policy definitions and set definitions at the subscription scope (e.g., **Resource Policy Contributor** or **Owner**).
+
+**Run it**
+
+From the folder that contains the JSON files and the script:
+
+```powershell
+# Deploy to the current Az context subscription
+.\Deploy-Policies.ps1
+
+# Or target a specific subscription
+.\Deploy-Policies.ps1 -SubscriptionId "00000000-0000-0000-0000-000000000000"
+```
+
+The script will:
+
+1. Create the four policy definitions (`Deny-*` and `Modify-*`).
+2. Create the `VMPatchOrchestration-Initiative` policy set definition referencing those definitions.
+
+On success it prints `Done. 4 policy definitions + 1 initiative deployed.` After deploying, continue with [Assigning the initiative](#assigning-the-initiative).
+
+> **Tip:** If you previously hit the error `The value '[parameters('denyWindowsEffect'` is not allowed for policy parameter 'effect'`, make sure you are using the current version of the script — older versions corrupted the initiative's parameter references during ID resolution.
 
 ### Azure CLI
 
