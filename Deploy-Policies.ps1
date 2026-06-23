@@ -69,8 +69,13 @@ $init    = $initRaw | ConvertFrom-Json
 $ip      = $init.properties
 
 # Resolve [concat(subscription().id, '...')] -> /subscriptions/<id>/...
+# Only rewrite the concat() expressions; leave [parameters('...')] references intact.
 $defsJson = $ip.policyDefinitions | ConvertTo-Json -Depth 50
-$defsJson = $defsJson.Replace("[concat(subscription().id, '", $subScope).Replace("')]", "")
+$defsJson = [regex]::Replace(
+    $defsJson,
+    "\[concat\(subscription\(\)\.id, '([^']*)'\)\]",
+    { param($m) $subScope + $m.Groups[1].Value }
+)
 
 Write-Host "Creating policy set definition: $($init.name)" -ForegroundColor Green
 $setParams = @{
